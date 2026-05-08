@@ -2,34 +2,30 @@ name: Sync to GitFlic
 
 on:
   push:
-    branches:
-      - '**'
-    tags:
-      - '**'
-  workflow_dispatch: # Позволяет запустить синхронизацию вручную кнопкой
+    branches: [ "main" ]   # если основная ветка называется master, замените на "master"
+  schedule:
+    - cron: '0 */4 * * *'   # каждые 4 часа (можно изменить)
+  workflow_dispatch:        # ручной запуск через интерфейс GitHub
 
 jobs:
-  gitflic-sync:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Важно для скачивания всей истории коммитов
+          fetch-depth: 0      # забираем всю историю
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Mirror"
+          git config --global user.email "mirror@github.com"
 
       - name: Push to GitFlic
+        env:
+          GITFLIC_TOKEN: ${{ secrets.GITFLIC_TOKEN }}
         run: |
-          # 1. Удаляем старый пульт, если он остался от прошлых запусков
-          git remote remove gitflic || true
-          
-          # 2. Добавляем удаленный репозиторий GitFlic
-          # Используем ваш логин fallendimmetrius и токен из секретов
-          git remote add gitflic https://fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/fallendimmetrius/validate.git
-          
-          # 3. Синхронизируем все ветки
-          echo "Pushing branches..."
-          git push --force --all gitflic
-          
-          # 4. Синхронизируем все теги
-          echo "Pushing tags..."
-          git push --force --tags gitflic
+          # Адрес репозитория-зеркала на GitFlic
+          GITFLIC_REPO="https://oauth2:${GITFLIC_TOKEN}@gitflic.ru/project/fallendimmetrius/validate.git"
+          git remote add gitflic $GITFLIC_REPO
+          git push --mirror --force gitflic   # --force нужен, если в GitFlic уже есть коммиты (перезапишет)
