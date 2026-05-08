@@ -2,31 +2,30 @@ name: Sync to GitFlic
 
 on:
   push:
-    branches:
-      - '**'
-    tags:
-      - '**'
-  workflow_dispatch: # Позволяет запустить синхронизацию вручную кнопкой
+    branches: [ "main" ]   # если основная ветка называется master, замените на "master"
+  schedule:
+    - cron: '0 */4 * * *'   # каждые 4 часа (можно изменить)
+  workflow_dispatch:        # ручной запуск через интерфейс GitHub
 
 jobs:
-  gitflic-sync:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Важно для скачивания всей истории коммитов
+          fetch-depth: 0      # забираем всю историю
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Mirror"
+          git config --global user.email "mirror@github.com"
 
       - name: Push to GitFlic
+        env:
+          GITFLIC_TOKEN: ${{ secrets.GITFLIC_TOKEN }}
         run: |
-          git remote remove gitflic || true
-          
-          # Пробуем передать токен как пароль к логину fallendimmetrius
-          # Если это не сработает, попробуйте заменить fallendimmetrius на слово token
-          git remote add gitflic https://fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/fallendimmetrius/validate.git
-          
-          # Добавим флаг, который иногда помогает при странных редиректах
-          git config http.followRedirects true
-          
-          git push --force --all gitflic
-          git push --force --tags gitflic
+          # Адрес репозитория-зеркала на GitFlic
+          GITFLIC_REPO="https://oauth2:${GITFLIC_TOKEN}@gitflic.ru/project/fallendimmetrius/validate.git"
+          git remote add gitflic $GITFLIC_REPO
+          git push --mirror --force gitflic   # --force нужен, если в GitFlic уже есть коммиты (перезапишет)
