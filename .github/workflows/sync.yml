@@ -1,34 +1,35 @@
-name: Sync All Branches to GitFlic
+name: Sync to GitFlic
 
 on:
   push:
-    
     branches:
       - '**'
     tags:
       - '**'
+  workflow_dispatch: # Позволяет запустить синхронизацию вручную кнопкой
 
 jobs:
   gitflic-sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0 # Важно для скачивания всей истории коммитов
 
       - name: Push to GitFlic
         run: |
-               - name: Push to GitFlic
-        env:
-          # Кодируем логин и токен в base64 для заголовка
-          AUTH_HEADER: ${{ secrets.GITFLIC_TOKEN }}
-        run: |
-          git remote add gitflic https://gitflic.ru
+          # 1. Удаляем старый пульт, если он остался от прошлых запусков
+          git remote remove gitflic || true
           
-          # Настраиваем авторизацию через заголовок (надёжнее, чем в URL)
-          # Используем ваш логин fallendimmetrius и токен
-          git config http.https://gitflic.ru "Authorization: Basic $(echo -n 'fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}' | base64)"
+          # 2. Добавляем удаленный репозиторий GitFlic
+          # Используем ваш логин fallendimmetrius и токен из секретов
+          git remote add gitflic https://fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/fallendimmetrius/validate.git
           
+          # 3. Синхронизируем все ветки
+          echo "Pushing branches..."
           git push --force --all gitflic
+          
+          # 4. Синхронизируем все теги
+          echo "Pushing tags..."
           git push --force --tags gitflic
