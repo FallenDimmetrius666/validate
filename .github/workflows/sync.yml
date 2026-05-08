@@ -2,12 +2,8 @@ name: Sync to GitFlic
 
 on:
   push:
-    # Убираем ограничение на ветку main, чтобы синхронизировалось ВСЁ
-    branches:
-      - '**'
-    tags:
-      - '**'
-  workflow_dispatch: # Оставляем возможность запустить вручную
+    branches: [ "main" ]   # или "master", если основная ветка так называется
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -18,14 +14,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Mirror"
+          git config --global user.email "mirror@github.com"
+
       - name: Push to GitFlic
         env:
           GITFLIC_TOKEN: ${{ secrets.GITFLIC_TOKEN }}
         run: |
-          # Используем проверенный логин oauth2
-          # Убрал /project/, так как это веб-путь, а не git-путь
-          GITFLIC_REPO="https://oauth2:${GITFLIC_TOKEN}@gitflic.ru/fallendimmetrius/validate.git"
-          
+          GITFLIC_REPO="https://oauth2:${GITFLIC_TOKEN}@gitflic.ru/project/fallendimmetrius/validate.git"
           git remote add gitflic $GITFLIC_REPO
-          # --mirror синхронизирует абсолютно всё: все ветки и все теги за один раз
           git push --mirror --force gitflic
