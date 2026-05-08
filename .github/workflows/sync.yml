@@ -19,17 +19,14 @@ jobs:
 
       - name: Push to GitFlic
         run: |
-          # 1. Удаляем старый пульт, если он остался от прошлых запусков
           git remote remove gitflic || true
           
-          # 2. Добавляем удаленный репозиторий GitFlic
-          # Используем ваш логин fallendimmetrius и токен из секретов
+          # Пробуем передать токен как пароль к логину fallendimmetrius
+          # Если это не сработает, попробуйте заменить fallendimmetrius на слово token
           git remote add gitflic https://fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/fallendimmetrius/validate.git
           
-          # 3. Синхронизируем все ветки
-          echo "Pushing branches..."
-          git push --force --all gitflic
+          # Добавим флаг, который иногда помогает при странных редиректах
+          git config http.followRedirects true
           
-          # 4. Синхронизируем все теги
-          echo "Pushing tags..."
+          git push --force --all gitflic
           git push --force --tags gitflic
