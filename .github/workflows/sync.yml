@@ -2,10 +2,12 @@ name: Sync to GitFlic
 
 on:
   push:
-    branches: [ "main" ]   # если основная ветка называется master, замените на "master"
-  schedule:
-    - cron: '0 */4 * * *'   # каждые 4 часа (можно изменить)
-  workflow_dispatch:        # ручной запуск через интерфейс GitHub
+    # Убираем ограничение на ветку main, чтобы синхронизировалось ВСЁ
+    branches:
+      - '**'
+    tags:
+      - '**'
+  workflow_dispatch: # Оставляем возможность запустить вручную
 
 jobs:
   sync:
@@ -14,18 +16,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0      # забираем всю историю
-
-      - name: Configure Git
-        run: |
-          git config --global user.name "GitHub Mirror"
-          git config --global user.email "mirror@github.com"
+          fetch-depth: 0
 
       - name: Push to GitFlic
         env:
           GITFLIC_TOKEN: ${{ secrets.GITFLIC_TOKEN }}
         run: |
-          # Адрес репозитория-зеркала на GitFlic
-          GITFLIC_REPO="https://oauth2:${GITFLIC_TOKEN}@gitflic.ru/project/fallendimmetrius/validate.git"
+          # Используем проверенный логин oauth2
+          # Убрал /project/, так как это веб-путь, а не git-путь
+          GITFLIC_REPO="https://oauth2:${GITFLIC_TOKEN}@gitflic.ru/fallendimmetrius/validate.git"
+          
           git remote add gitflic $GITFLIC_REPO
-          git push --mirror --force gitflic   # --force нужен, если в GitFlic уже есть коммиты (перезапишет)
+          # --mirror синхронизирует абсолютно всё: все ветки и все теги за один раз
+          git push --mirror --force gitflic
