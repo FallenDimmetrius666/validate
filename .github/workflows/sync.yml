@@ -19,6 +19,9 @@ jobs:
 
       - name: Push to GitFlic
         run: |
-          git remote add gitflic https://${{ github.actor }}:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/${{ github.repository }}.git
+         
+          git remote add gitflic https://fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/fallendimmetrius/validate.git
+          
+
           git push --force --all gitflic
           git push --force --tags gitflic
