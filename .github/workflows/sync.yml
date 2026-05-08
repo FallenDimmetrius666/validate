@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0 
 
       - name: Push to GitFlic
-       run: |
-            git remote add gitflic https://fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/fallendimmetrius/validate.git
-            git push --force --all gitflic
-            git push --force --tags gitflic
+        run: |
+          git remote add gitflic https://fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/fallendimmetrius/validate.git
+          git push --force --all gitflic
+          git push --force --tags gitflic
