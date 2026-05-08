@@ -2,10 +2,8 @@ name: Sync to GitFlic
 
 on:
   push:
-    branches: [ "main" ]   # если основная ветка называется master, замените на "master"
-  schedule:
-    - cron: '0 */4 * * *'   # каждые 4 часа (можно изменить)
-  workflow_dispatch:        # ручной запуск через интерфейс GitHub
+    branches: [ "main" ]   # или "master", если основная ветка так называется
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -14,7 +12,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0      # забираем всю историю
+          fetch-depth: 0
 
       - name: Configure Git
         run: |
@@ -25,7 +23,6 @@ jobs:
         env:
           GITFLIC_TOKEN: ${{ secrets.GITFLIC_TOKEN }}
         run: |
-          # Адрес репозитория-зеркала на GitFlic
           GITFLIC_REPO="https://oauth2:${GITFLIC_TOKEN}@gitflic.ru/project/fallendimmetrius/validate.git"
           git remote add gitflic $GITFLIC_REPO
-          git push --mirror --force gitflic   # --force нужен, если в GitFlic уже есть коммиты (перезапишет)
+          git push --mirror --force gitflic
