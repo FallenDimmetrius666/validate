@@ -2,7 +2,7 @@ name: Sync All Branches to GitFlic
 
 on:
   push:
-    # Запуск при пуше в любую ветку и любой тег
+    
     branches:
       - '**'
     tags:
@@ -15,13 +15,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Скачиваем всю историю всех веток
+          fetch-depth: 0 
 
       - name: Push to GitFlic
         run: |
-         
           git remote add gitflic https://fallendimmetrius:${{ secrets.GITFLIC_TOKEN }}@gitflic.ru/fallendimmetrius/validate.git
-          
-
           git push --force --all gitflic
           git push --force --tags gitflic
