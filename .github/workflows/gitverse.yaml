@@ -23,15 +23,9 @@ jobs:
         env:
           GITVERSE_TOKEN: ${{ secrets.GITVERSE_TOKEN }}
         run: |
-          set -e  # остановиться при первой ошибке
-          # Вариант 1: простой токен в URL
           GITVERSE_REPO="https://${GITVERSE_TOKEN}@gitverse.ru/fallendimmterius/validate.git"
-          # Раскомментируйте один из альтернативных вариантов, если не работает:
-          # GITVERSE_REPO="https://oauth2:${GITVERSE_TOKEN}@gitverse.ru/fallendimmterius/validate.git"
-          # GITVERSE_REPO="https://fallendimmterius:${GITVERSE_TOKEN}@gitverse.ru/fallendimmterius/validate.git"
-
-          echo "URL (токен скрыт): ${GITVERSE_REPO//${GITVERSE_TOKEN}/*****}"
           git remote remove gitverse 2>/dev/null || true
           git remote add gitverse $GITVERSE_REPO
-          git push --mirror --force gitverse 2>&1 | tee push.log
-          # Если в логах есть ошибка, она будет видна
+          # Отправляем все ветки и теги, не пытаясь удалять старые
+          git push --force --all gitverse
+          git push --force --tags gitverse
